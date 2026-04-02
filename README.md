@@ -213,32 +213,6 @@ Source: <TARGET_SERVER_IP>
 
 ---
 
-# ⚠️ Common Mistakes
-
-### ❌ Using internal IP externally
-
-Will NOT work.
-
----
-
-### ❌ Not exposing both ports
-
-You need:
-
-* 8000 → SSRF
-* 9000 → RFI
-
----
-
-### ❌ Assuming not vulnerable
-
-If external fails:
-
-* outbound traffic may be blocked
-* test internally or pivot
-
----
-
 # 💣 Limitations
 
 * No DNS-based SSRF detection
@@ -246,17 +220,6 @@ If external fails:
 * No WAF bypass automation
 
 ---
-
-# 🧠 Pro Tips
-
-* Use pivot hosts for internal SSRF
-* Try:
-
-```
-169.254.169.254
-127.0.0.1
-10.x.x.x
-```
 
 * Always prove **RCE**, not just inclusion
 
@@ -296,4 +259,4 @@ uid=www-data
 
 # 👨‍💻 Author
 
-Built for real-world **pentesting & red team workflows**.
+**who cares?**
