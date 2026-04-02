@@ -1,8 +1,6 @@
-## 🌐 External Usage (Burp Community / Real Targets)
+## 🌐 Burp Collaborator in python
 
-By default, this tool works in **internal networks**.
-
-However, if you're using **Burp Suite Community Edition** (which does not include Burp Collaborator), you can use this tool as a **replacement for both internal and external testing**.
+if you're using **Burp Suite Community Edition** (which does not include Burp Collaborator), you can use this tool as a **replacement for both internal and external testing**.
 
 ### 🔓 To Use Externally
 
